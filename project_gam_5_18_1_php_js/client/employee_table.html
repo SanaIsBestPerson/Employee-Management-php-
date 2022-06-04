@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Table View</title>
+    <script>
+        function f1(){
+            var http = new XMLHttpRequest();
+
+            http.onreadystatechange = function(){
+                
+                if (this.readyState == 4 && this.status == 200){
+                    display.innerHTML = this.responseText;
+                }
+            }
+            http.open("GET","../server/employee_table.php", true);
+            http.send();
+        }
+    </script>
+</head>
+<body onload="f1()">
+    <h1>Employee Table View</h1>
+    <table border="1" cellspacing="0" cellpadding="5">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Gender</th>
+            </tr>
+        </thead>
+        <tbody id="display">
+
+        </tbody>
+    </table>
+</body>
+</html>

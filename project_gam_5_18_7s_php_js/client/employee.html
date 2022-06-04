@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script>
+        var empid;
+        window.addEventListener("load", loading);
+
+        function loading() {
+            btnAdd.addEventListener("click", checkEmpty);
+            btnClear.addEventListener("click", formClear);
+            btnUpdate.addEventListener("click", empUpdate);
+            loadTable();
+            loadGender();
+        }
+
+        function loadGender() {
+            var httpGender = new XMLHttpRequest();
+            httpGender.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    var jsonDataGender = this.responseText;
+                    funGender(jsonDataGender);
+                }
+            }
+            httpGender.open("GET", "../server/genderDao.php", true);
+            httpGender.send();
+        }
+
+        function loadTable() {
+            var httpTable = new XMLHttpRequest();
+            httpTable.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    var jsonDataTable = this.responseText;
+                    funTable(jsonDataTable);
+                }
+            }
+            httpTable.open("GET", "../server/employee_table.php", true);
+            httpTable.send();
+        }
+
+        function funTable(jsonDataTable) {
+            var rows = JSON.parse(jsonDataTable);
+            for (let index = 0; index < rows.length; index++) {
+                const employee = rows[index];
+
+                var tr = document.createElement("tr");
+                tr.addEventListener('click', function() {
+                    fillForm(employee)
+                })
+
+                var tdId = document.createElement("td");
+                tdId.innerHTML = employee['id'];
+                tr.appendChild(tdId);
+
+                var nameTd = document.createElement("td");
+                nameTd.innerHTML = employee['name'];
+                tr.appendChild(nameTd);
+
+                var ageId = document.createElement("td");
+                ageId.innerHTML = employee['age'];
+                tr.appendChild(ageId);
+
+                var genderId = document.createElement("td");
+                genderId.innerHTML = employee['gender'];
+                tr.appendChild(genderId);
+
+                var tdDelete = document.createElement("td");
+                var btnDelete = document.createElement("button");
+                btnDelete.type = "button";
+                btnDelete.innerHTML = "Delete";
+                btnDelete.addEventListener("click", function() {
+                    empDelete(employee['id']);
+                });
+
+                tdDelete.appendChild(btnDelete);
+                tr.appendChild(tdDelete);
+                display.appendChild(tr);
+            }
+        }
+
+        function empDelete(id) {
+
+            var httpTable = new XMLHttpRequest();
+            httpTable.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    window.alert("Sucessfully Removed");
+                    display.innerHTML = '';
+                    loadTable();
+                }
+            }
+            httpTable.open("DELETE", "../server/employee_delete.php?id=" + id, true);
+            httpTable.send();
+
+        }
+
+        function funGender(jsonDataGender) {
+            var rows = JSON.parse(jsonDataGender);
+            for (let index = 0; index < rows.length; index++) {
+                const gender = rows[index];
+                var opGender = document.createElement("option");
+                opGender.innerHTML = gender['gender'];
+                opGender.value = gender['id'];
+                cmbGender.appendChild(opGender);
+            }
+        }
+
+        function empAdd() {
+
+            var url = "../server/employee_add.php?name=" + txtName.value + "&age=" + txtAge.value + "&gender=" + cmbGender.value;
+            var httpAdd = new XMLHttpRequest();
+            httpAdd.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    window.alert("Sucessfully Added");
+                    display.innerHTML = '';
+                    loadTable();
+                }
+            }
+            httpAdd.open("GET", url, true);
+            httpAdd.send();
+        }
+
+        function checkEmpty() {
+            if (txtName.value == "") {
+                alert("Please input a Name");
+                txtName.nextElementSibling.innerHTML = "*Required Field";
+                txtAge.nextElementSibling.innerHTML = "";
+                cmbGender.nextElementSibling.innerHTML = "";
+                return false;
+            }
+            if (txtAge.value == "") {
+                alert("Please input a Age");
+                txtName.nextElementSibling.innerHTML = "";
+                txtAge.nextElementSibling.innerHTML = "*Required Field";
+                cmbGender.nextElementSibling.innerHTML = "";
+                return false;
+            }
+            if (cmbGender.value == "Select Gender") {
+                alert("Please input a Gender");
+                txtName.nextElementSibling.innerHTML = "";
+                txtAge.nextElementSibling.innerHTML = "";
+                cmbGender.nextElementSibling.innerHTML = "*Required Field";
+                return false;
+            }
+
+            empAdd();
+            txtName.nextElementSibling.innerHTML = "";
+            txtAge.nextElementSibling.innerHTML = "";
+            cmbGender.nextElementSibling.innerHTML = "";
+        }
+
+        function formClear() {
+            txtName.nextElementSibling.innerHTML = "";
+            txtAge.nextElementSibling.innerHTML = "";
+            cmbGender.nextElementSibling.innerHTML = "";
+        }
+
+        function fillForm(employee) {
+
+            if (employee['gender'] == "male")
+                var genID = 1;
+            if (employee['gender'] == "female")
+                var genID = 2;
+            if (employee['gender'] == "other")
+                var genID = 3;
+
+            empid = employee['id'];
+            txtName.value = employee['name'];
+            txtAge.value = employee['age'];
+            cmbGender.value = genID;
+        }
+
+        function empUpdate() {
+
+            var url = "../server/employee_update.php?id=" + empid + "&name=" + txtName.value + "&age=" + txtAge.value + "&gender=" + cmbGender.value;
+            var httpUpdate = new XMLHttpRequest();
+            httpUpdate.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    window.alert("Sucessfully Updated");
+                    display.innerHTML = '';
+                    loadTable();
+                }
+            }
+            httpUpdate.open("GET", url, true);
+            httpUpdate.send();
+        }
+    </script>
+    <link rel="stylesheet" href="employee.css">
+
+</head>
+
+<body>
+    <div>
+        <h1> Add Employee </h1>
+        <form>
+            <label for="name">Name :</label>
+            <input type="text" name="name" id="txtName">
+            <label class="rq"></label><br><br>
+            <label for="age">Age :</label>
+            <input type="text" name="age" id="txtAge">
+            <label class="rq"></label><br><br>
+            <label for="gender">Gender :</label>
+            <select name="gender" id="cmbGender">
+                <option disabled selected >Select Gender</option>
+            </select>
+            <label class="rq"></label><br><br>
+            <input type="button" value="Add" id="btnAdd">
+            <input type="reset" value="Clear" id="btnClear">
+            <input type="button" value="Update" id="btnUpdate">
+        </form>
+    </div>
+
+    <div>
+        <h1>Employee Table View</h1>
+        <table border="1" cellspacing="0" cellpadding="5">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Gender</th>
+                    <th>Button</th>
+                </tr>
+            </thead>
+            <tbody id="display"></tbody>
+        </table>
+    </div>
+</body>
+
+</html>
